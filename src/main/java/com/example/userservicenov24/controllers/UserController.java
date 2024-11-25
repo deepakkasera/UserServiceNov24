@@ -1,12 +1,12 @@
 package com.example.userservicenov24.controllers;
 
-import com.example.userservicenov24.dtos.LogOutRequestDto;
-import com.example.userservicenov24.dtos.LoginRequestDto;
-import com.example.userservicenov24.dtos.SignUpRequestDto;
-import com.example.userservicenov24.dtos.UserDto;
+import com.example.userservicenov24.dtos.*;
+import com.example.userservicenov24.exceptions.ValidTokenNotFoundException;
 import com.example.userservicenov24.models.Token;
 import com.example.userservicenov24.models.User;
+import com.example.userservicenov24.repositories.TokenRepository;
 import com.example.userservicenov24.services.UserService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,8 +21,14 @@ public class UserController {
 
 
     @PostMapping("/login")
-    public Token login(@RequestBody LoginRequestDto requestDto) {
-        return null;
+    public TokenDto login(@RequestBody LoginRequestDto requestDto) {
+        Token token = userService.login(
+                requestDto.getEmail(),
+                requestDto.getPassword()
+        );
+
+        //Convert token to TokenDto
+        return TokenDto.from(token);
     }
 
     @PostMapping("/signup")
@@ -38,8 +44,23 @@ public class UserController {
     }
 
     @GetMapping("/logout")
-    public ResponseEntity<Void> logout(LogOutRequestDto requestDto) {
-        return null;
+    public ResponseEntity<Void> logout(@RequestBody LogOutRequestDto requestDto) {
+        ResponseEntity<Void> responseEntity = null;
+
+        try {
+            userService.logout(requestDto.getTokenValue());
+
+            responseEntity = new ResponseEntity<>(
+                    HttpStatus.OK
+            );
+        } catch (ValidTokenNotFoundException e) {
+            responseEntity = new ResponseEntity<>(
+                    HttpStatus.BAD_REQUEST
+            );
+        }
+        //TODO : Move the exception handling logic inside the Controller Advice.
+
+        return responseEntity;
     }
 
     @GetMapping("/validate")
