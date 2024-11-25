@@ -11,5 +11,5 @@ public interface UserService {
 
     void logout(String token) throws ValidTokenNotFoundException;
 
-    User validateToken(String token);
+    User validateToken(String token) throws ValidTokenNotFoundException;
 }

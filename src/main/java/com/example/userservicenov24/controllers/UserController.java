@@ -4,7 +4,6 @@ import com.example.userservicenov24.dtos.*;
 import com.example.userservicenov24.exceptions.ValidTokenNotFoundException;
 import com.example.userservicenov24.models.Token;
 import com.example.userservicenov24.models.User;
-import com.example.userservicenov24.repositories.TokenRepository;
 import com.example.userservicenov24.services.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -63,8 +62,13 @@ public class UserController {
         return responseEntity;
     }
 
-    @GetMapping("/validate")
-    public UserDto validateToken(String token) {
-        return null;
+    @GetMapping("/validate/{tokenValue}")
+    public UserDto validateToken(@PathVariable String tokenValue) {
+        try {
+            User user = userService.validateToken(tokenValue);
+            return UserDto.from(user);
+        } catch (ValidTokenNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

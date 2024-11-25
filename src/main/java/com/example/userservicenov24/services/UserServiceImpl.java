@@ -114,7 +114,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User validateToken(String token) {
-        return null;
+    public User validateToken(String tokenValue) throws ValidTokenNotFoundException {
+        Optional<Token> optionalToken =
+                tokenRepository.findByValueAndDeletedAndExpiryAtGreaterThan(tokenValue, false, new Date());
+
+        if (optionalToken.isEmpty()) {
+            throw new ValidTokenNotFoundException("Valid token not found.");
+        }
+
+        Token token = optionalToken.get();
+        return token.getUser();
     }
 }
