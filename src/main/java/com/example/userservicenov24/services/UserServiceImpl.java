@@ -1,11 +1,15 @@
 package com.example.userservicenov24.services;
 
+import com.example.userservicenov24.dtos.SendEmailDto;
 import com.example.userservicenov24.exceptions.ValidTokenNotFoundException;
 import com.example.userservicenov24.models.Token;
 import com.example.userservicenov24.models.User;
 import com.example.userservicenov24.repositories.TokenRepository;
 import com.example.userservicenov24.repositories.UserRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,13 +22,19 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
     private BCryptPasswordEncoder passwordEncoder;
     private TokenRepository tokenRepository;
+    private KafkaTemplate<String, String> kafkaTemplate;
+    private ObjectMapper objectMapper;
 
     public UserServiceImpl(UserRepository userRepository,
                            BCryptPasswordEncoder passwordEncoder,
-                           TokenRepository tokenRepository) {
+                           TokenRepository tokenRepository,
+                           KafkaTemplate kafkaTemplate,
+                           ObjectMapper objectMapper) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenRepository = tokenRepository;
+        this.kafkaTemplate = kafkaTemplate;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -78,7 +88,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User signUp(String name, String email, String password) {
+    public User signUp(String name, String email, String password) throws JsonProcessingException {
         Optional<User> optionalUser = userRepository.findByEmail(email);
 
         if (optionalUser.isPresent()) {
@@ -91,6 +101,17 @@ public class UserServiceImpl implements UserService {
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
         user.setVerified(true);
+
+        SendEmailDto sendEmailDto = new SendEmailDto();
+        sendEmailDto.setTo(email);
+        sendEmailDto.setSubject("Welcome to Scaler!!!");
+        sendEmailDto.setBody("We are happy to have you onboarded, All the best for your journey.");
+
+        //Publish an event inside Kafka to send a Welcome Email to the user.
+        kafkaTemplate.send(
+                "sendEmail",
+                objectMapper.writeValueAsString(sendEmailDto)
+        );
 
         return userRepository.save(user);
     }

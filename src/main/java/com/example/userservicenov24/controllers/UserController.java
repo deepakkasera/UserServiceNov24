@@ -5,6 +5,7 @@ import com.example.userservicenov24.exceptions.ValidTokenNotFoundException;
 import com.example.userservicenov24.models.Token;
 import com.example.userservicenov24.models.User;
 import com.example.userservicenov24.services.UserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +32,7 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    public UserDto signUp(@RequestBody SignUpRequestDto requestDto) {
+    public UserDto signUp(@RequestBody SignUpRequestDto requestDto) throws JsonProcessingException {
 
         User user = userService.signUp(
                 requestDto.getName(),
