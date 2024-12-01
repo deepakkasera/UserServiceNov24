@@ -1,6 +1,5 @@
 package com.example.userservicenov24.services;
 
-import com.example.userservicenov24.dtos.SendEmailDto;
 import com.example.userservicenov24.exceptions.ValidTokenNotFoundException;
 import com.example.userservicenov24.models.Token;
 import com.example.userservicenov24.models.User;
@@ -102,16 +101,16 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(password));
         user.setVerified(true);
 
-        SendEmailDto sendEmailDto = new SendEmailDto();
-        sendEmailDto.setTo(email);
-        sendEmailDto.setSubject("Welcome to Scaler!!!");
-        sendEmailDto.setBody("We are happy to have you onboarded, All the best for your journey.");
+//        SendEmailDto sendEmailDto = new SendEmailDto();
+//        sendEmailDto.setTo(email);
+//        sendEmailDto.setSubject("Welcome to Scaler!!!");
+//        sendEmailDto.setBody("We are happy to have you onboarded, All the best for your journey.");
 
         //Publish an event inside Kafka to send a Welcome Email to the user.
-        kafkaTemplate.send(
-                "sendEmail",
-                objectMapper.writeValueAsString(sendEmailDto)
-        );
+//        kafkaTemplate.send(
+//                "sendEmail",
+//                objectMapper.writeValueAsString(sendEmailDto)
+//        );
 
         return userRepository.save(user);
     }
